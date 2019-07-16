@@ -1,0 +1,36 @@
+### Very basic css definitions to layout the page.
+
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.inputRow {
+    display: inline-flex;
+    flex-direction: row;
+    width = 100%
+}
+
+.inputDifficultySlider {
+    flex: 1;
+}
+
+.inputLengthSlider {
+    flex: 1;
+}
+
+.plotLeft {
+    flex: 1;
+}
+
+.plotRight {
+    flex: 1;
+}
+
+.plotRow {
+    display: inline-flex;
+    flex-direction: row;
+    width: 100%;
+}
+
