@@ -1,0 +1,26 @@
+CREATE TABLE Trails (
+ hike_ID INT,
+ ascent INT,
+ descent INT,
+ difficulty VARCHAR (2000),
+ high INT,
+ latitude VARCHAR (2000),
+ distance VARCHAR (2000),
+ city VARCHAR (2000),
+ longitude VARCHAR (2000),
+ low INT,
+ nickname VARCHAR (2000),
+ vote_count VARCHAR (200),
+ rating VARCHAR (200),
+ summary VARCHAR (2000),
+ url VARCHAR (2000),
+PRIMARY KEY (hike_ID)
+);
+
+DROP TABLE trails;
+
+SELECT * FROM Trails;
+
+
+COPY Trails FROM 'C:\Users\Neferpitou\Desktop\coding\jake\hiking.csv'
+DELIMITER  ',' ;
