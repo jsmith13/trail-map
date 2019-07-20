@@ -9,6 +9,8 @@ import numpy as np
 # load the dataset from the csv file
 hikes = pd.read_csv("hiking project - NWtrails (1).csv")
 
+# integer encode difficulty
+hikes["difficulty"] = hikes["difficulty"].apply(lambda x: {"green": 0, "greenBlue": 1, "blue": 2, "blueBlack": 3, "black": 4, "dblack": 5}[x])
 
 ## data formatting functions
 
@@ -16,28 +18,37 @@ hikes = pd.read_csv("hiking project - NWtrails (1).csv")
 # takes no arguments
 # returns a list of longitude, latitude, and name of trailheads (0, 1, 2)
 # returns longitude and latitude to center mapbox on (3, 4)
-def trailhead_map_update():
-    return(
-            hikes["longitude"],
-            hikes["latitude"],
-            hikes["name"],
-            
-            # longitude of center
-            np.mean([hikes["longitude"].min(), hikes["longitude"].max()]),
-            # latitude of center
-            np.mean([hikes["latitude"].min(), hikes["latitude"].max()])
+def trailhead_map_update(length, difficulty):
+    # subset hikes by length and difficulty
+    hikes_subset = hikes.query("length >= @length[0] & length <= @length[1]")
+    hikes_subset = hikes_subset.query("difficulty >= @difficulty[0] & difficulty <= @difficulty[1]")
+    
+    # return data from subset
+    return( 
+        hikes_subset["longitude"],
+        hikes_subset["latitude"],
+        hikes_subset["name"],
+
+        # longitude of center
+        np.mean([hikes_subset["longitude"].min(), hikes_subset["longitude"].max()]),
+        # latitude of center
+        np.mean([hikes_subset["latitude"].min(), hikes_subset["latitude"].max()])
     )
 
 
 # function trail_metrics_update
 # takes no arguments
 # returns length, ascent, and integer-encoded difficulties (0, 1, 2)
-def trail_metrics_update():
+def trail_metrics_update(length, difficulty):
+    # subset hikes by length and difficulty
+    hikes_subset = hikes.query("length >= @length[0] & length <= @length[1]")
+    hikes_subset = hikes_subset.query("difficulty >= @difficulty[0] & difficulty <= @difficulty[1]")
+    
+    # return data from subset
     return(
-        hikes["length"],
-        hikes["ascent"],
-        
-        # integer-encode difficulties
-        hikes["difficulty"].apply(lambda x: {"green": 0, "greenBlue": 1, "blue": 2, "blueBlack": 3, "black": 4, "dblack": 5}[x])
+        hikes_subset["length"],
+        hikes_subset["ascent"],
+        hikes_subset["name"],
+        hikes_subset["difficulty"]
     )
 

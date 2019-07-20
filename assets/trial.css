@@ -14,10 +14,13 @@
 
 .inputDifficultySlider {
     flex: 1;
+    margin: {"l": 20; "b": 0, "t": 0, "r": 20};
 }
 
 .inputLengthSlider {
     flex: 1;
+    height: 200;
+    width: 600;
 }
 
 .plotLeft {
