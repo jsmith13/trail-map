@@ -1,11 +1,5 @@
 ### Very basic css definitions to layout the page.
 
-.container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
 .inputRow {
     display: inline-flex;
     flex-direction: row;
@@ -14,13 +8,20 @@
 
 .inputDifficultySlider {
     flex: 1;
-    margin: {"l": 20; "b": 0, "t": 0, "r": 20};
+    margin-right: 50px;
+    margin-left: 50px;
 }
 
 .inputLengthSlider {
     flex: 1;
-    height: 200;
-    width: 600;
+    margin-right: 50px;
+    margin-left: 50px;
+}
+
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .plotLeft {
@@ -37,3 +38,8 @@
     width: 100%;
 }
 
+.sliderRow {
+    display: inline-flex;
+    flex-direction: row;
+    width = 60%
+}

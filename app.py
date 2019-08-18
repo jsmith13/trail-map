@@ -1,4 +1,6 @@
 ### Dash dashboard for visualizing the data.
+## This is the "parent" file that lays out the dashboard, calls the data update functions, and contains the calls to run the dashboard.
+## Dependent directly on config.py and callbacks.py.
 
 # import subscripts
 import config
@@ -15,7 +17,7 @@ app = dash.Dash()
 
 ## define the layout of the dashboard
 app.layout = html.Div(
-    className = "container",
+    className = "pageContainer",
     children = [
         # page title
         html.H1(
@@ -52,11 +54,10 @@ app.layout = html.Div(
             ]    
         ),
         
-        # flex row to hold the inputs
+        # a flex row to hold the difficulty and length sliders
         html.Div(
-            className = "inputRow",
+            className = "sliderRow",
             children = [
-                
                 # a slider to select hike difficulty
                 html.Div(
                     className = "inputDifficultySlider",
@@ -79,7 +80,7 @@ app.layout = html.Div(
                         )
                     ]
                 ),
-                
+
                 # a slider to select trail length
                 html.Div(
                     className = "inputLengthSlider",
@@ -88,12 +89,20 @@ app.layout = html.Div(
                         dcc.RangeSlider(
                             id = "length_slider",
                             min = 0,
-                            max = 100,
-                            step = 0.5,
-                            value = [0, 100],
+                            max = 2,
+                            #step = 0.1,
+                            value = [0, 2],
                             marks = {
-                                0: {"label": "0"},
-                                100: {"label": "100"}
+                                0: {"label": "1"},
+                                0.30103: {"label": "2"},
+                                0.4771213: {"label": "3"},
+                                0.60206: {"label": "4"},
+                                0.69897: {"label": "5"},
+                                1: {"label": "10"},
+                                1.176091: {"label": "15"},
+                                1.30103: {"label": "20"},
+                                1.69897: {"label": "50"},
+                                2: {"label": "100"}
                             }
                         )
                     ]

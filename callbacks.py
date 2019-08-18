@@ -8,24 +8,26 @@ import data_retrieval_functions as drf
 
 # import required libraries
 import plotly.graph_objs as plgo
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 
 ## this function is a wrapper to allow the callbacks to be imported into app.py
 def register_callbacks(app):
 
-    ## update functions
-    # update visual elements when the length slider is changed
+    ### update functions
+    ## updates the trailheads plot
     @app.callback(
-        [Output("trailheads_plot", "figure"),
-        Output("metrics_plot", "figure")],
+        Output("trailheads_plot", "figure"),
         [Input("length_slider", "value"),
-        Input("difficulty_slider", "value")],
+        Input("difficulty_slider", "value")]
     )
-    def callback_length_trailheads(length, difficulty):
-        ## update the trailhead plot
+    
+    def callback_update_trailheads_plot(length, difficulty):
+        # convert length out of logrithmic scale
+        length = [10 ** i for i in length]
+        
         # collect updated data from data_retrieval_functions.py
-        updates = drf.trailhead_map_update(length, difficulty)
+        updates = drf.trailheads_map_update(length, difficulty)
 
         # define data assignments
         data_trailheads_plot = [dict(
@@ -57,10 +59,27 @@ def register_callbacks(app):
                 zoom = 6
             )
         )
-
-        ## update the metrics plot
+        
+        # return data and layout for the trailhead plots in a dictionary
+        return(
+            {"data": data_trailheads_plot, "layout": layout_trailheads_plot}
+        )
+        
+    
+    ## updates the trail metrics plot
+    @app.callback(
+        Output("metrics_plot", "figure"),
+        [Input("length_slider", "value"),
+        Input("difficulty_slider", "value"),
+        Input("trailheads_plot", "selectedData")]
+    )
+    
+    def callback_widgets_update_metrics(length, difficulty, trailheads_selection):
+        # convert length out of logrithmic scale
+        length = [10 ** i for i in length]
+        
         # collect updated data from data_retrieval_functions.py
-        updates = drf.trail_metrics_update(length, difficulty)
+        updates = drf.trail_metrics_update(length, difficulty, trailheads_selection)
 
         # define data assignments
         data_metrics_plot = [dict(
@@ -96,10 +115,9 @@ def register_callbacks(app):
             )
         )
 
-        # return data and layout for plots in a list of dictionaries
+        # return data and layout for the metrics plot in a dictionary
         return(
-            [
-                {"data": data_trailheads_plot, "layout": layout_trailheads_plot},
-                {"data": data_metrics_plot, "layout": layout_metrics_plot}
-            ]
+            {"data": data_metrics_plot, "layout": layout_metrics_plot}
         )
+        
+    
