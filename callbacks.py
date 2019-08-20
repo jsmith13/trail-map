@@ -10,6 +10,11 @@ import data_retrieval_functions as drf
 import plotly.graph_objs as plgo
 from dash.dependencies import Input, Output, State
 
+# initiate a tracker for the number of clicks on each button in the interface
+n_clicks_tracker = {"add": 0, "remove": 0}
+
+# initiate a list of hike_IDs for the data currently in the table of selected trails
+hike_IDs = []
 
 ## this function is a wrapper to allow the callbacks to be imported into app.py
 def register_callbacks(app):
@@ -19,15 +24,16 @@ def register_callbacks(app):
     @app.callback(
         Output("trailheads_plot", "figure"),
         [Input("length_slider", "value"),
-        Input("difficulty_slider", "value")]
+        Input("difficulty_slider", "value"),
+        Input("rating_slider", "value")]
     )
     
-    def callback_update_trailheads_plot(length, difficulty):
+    def callback_update_trailheads_plot(length, difficulty, rating):
         # convert length out of logrithmic scale
         length = [10 ** i for i in length]
         
         # collect updated data from data_retrieval_functions.py
-        updates = drf.trailheads_map_update(length, difficulty)
+        updates = drf.trailheads_map_update(length, difficulty, rating)
 
         # define data assignments
         data_trailheads_plot = [dict(
@@ -35,23 +41,29 @@ def register_callbacks(app):
             mode = "markers",
             lon = updates[0], 
             lat = updates [1], 
-            text = updates[2]
+            text = updates[2],
+            
+            # color markers by maximum altitude
+            marker = dict(
+                color = updates[3],
+                colorscale = [[0.0, "violet"], [1.0, "blue"]]
+            )
         )]
 
         # define plot layout
         layout_trailheads_plot = plgo.Layout(
-            title = "It's a Map",
+            #title = "It's a Map",
             autosize = False,
             width = 800,
             height = 800,
-
+            
             # map location and orientation
             mapbox = plgo.layout.Mapbox(
                 accesstoken = config.mapbox_api_key,
                 bearing = 0,
                 center = plgo.layout.mapbox.Center(
-                    lon = updates[3],
-                    lat = updates[4]
+                    lon = updates[4],
+                    lat = updates[5]
                 ),
 
                 # map perspective
@@ -66,58 +78,29 @@ def register_callbacks(app):
         )
         
     
-    ## updates the trail metrics plot
+    ## updates the table of selected trails
     @app.callback(
-        Output("metrics_plot", "figure"),
-        [Input("length_slider", "value"),
-        Input("difficulty_slider", "value"),
-        Input("trailheads_plot", "selectedData")]
+        Output("selected_trail_table", "data"),
+        [Input("add_selection", "n_clicks"),
+        Input("remove_selection", "n_clicks")],
+        [State("trailheads_plot", "selectedData")]
     )
     
-    def callback_widgets_update_metrics(length, difficulty, trailheads_selection):
-        # convert length out of logrithmic scale
-        length = [10 ** i for i in length]
+    def callback_update_table(add_selection, remove_selection, selection):
+        # identify hike_IDs as a global variable
+        global hike_IDs
         
-        # collect updated data from data_retrieval_functions.py
-        updates = drf.trail_metrics_update(length, difficulty, trailheads_selection)
-
-        # define data assignments
-        data_metrics_plot = [dict(
-            type = "scatter",
-            mode = "markers",
-            x = updates[0],
-            y = updates[1],
-            text = updates[2],
-
-            # color markers by hike difficulty
-            marker = dict(
-                color = updates[3],
-                colorscale = [[0.0, "green"], [0.5, "blue"], [1.0, "black"]]
-            )
-        )]
-
-        # define plot layout
-        layout_metrics_plot = plgo.Layout(
-            title = "It's a Scatterplot",
-            autosize = False,
-            width = 800,
-            height = 800,
-
-            # define axis parameters
-            xaxis = dict(
-                type = "log",
-                title = "distance (miles)"
-            ),
-
-            yaxis = dict(
-                type = "log",
-                title = "elevation gain (feet)"
-            )
-        )
-
-        # return data and layout for the metrics plot in a dictionary
-        return(
-            {"data": data_metrics_plot, "layout": layout_metrics_plot}
-        )
+        # check to see if selection is empty
+        if selection is not None:
+            # pull data on trails selected in the trailheads plot
+            # update the list of indices
+            updates, hike_IDs = drf.add_selected_trails(selection, hike_IDs)
+                        
+            # return the data to be added
+            return(updates)
         
+        # if selection is empty, return empty data
+        else:
+            return([{}])
+    
     

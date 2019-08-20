@@ -18,17 +18,19 @@
     margin-left: 50px;
 }
 
+.inputRatingSlider {
+    flex: 1;
+    margin-right: 50px;
+    margin-left: 50px;
+}
+
 .pageContainer {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.plotLeft {
-    flex: 1;
-}
-
-.plotRight {
+.plotTrailheads {
     flex: 1;
 }
 
@@ -42,4 +44,20 @@
     display: inline-flex;
     flex-direction: row;
     width = 60%
+}
+
+.tableButtonsRow {
+    display: inline-flex;
+    flex-direction: row;
+    width = 100%
+}
+
+.tableColumn {
+    display: inline-flex;
+    flex-direction: column;
+    width = 50%
+}
+
+.trailTable {
+    flex: 1;
 }

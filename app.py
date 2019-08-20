@@ -8,8 +8,10 @@ from callbacks import register_callbacks
 
 # import required packages
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
+import math
 
 # initiate the dashboard
 app = dash.Dash()
@@ -21,33 +23,74 @@ app.layout = html.Div(
     children = [
         # page title
         html.H1(
-            children = "Trail Maps",
+            children = "Trails of Western Washington",
             style = {
                 "textAlign": "center",
                 "color": "black"
             }
         ),
 
-        # flex row to hold the two plots
+        # flex row to hold the plot and table
         html.Div(
             className = "plotRow",
             children = [
                 # plot of trailhead locations
                 html.Div(
-                    className = "plotLeft",
+                    className = "plotTrailheads",
                     children = [
                         dcc.Graph(
-                            id = "trailheads_plot",
-                        ),
+                            id = "trailheads_plot"
+                        )
                     ]
                 ),
-
-                # plot of trail metrics
+                
+                # flex column to hold the table and its buttons
                 html.Div(
-                    className = "plotRight",
+                    className = "tableColumn",
                     children = [
-                        dcc.Graph(
-                            id = "metrics_plot",
+                        # flex row to hold the buttons
+                        html.Div(
+                            className = "tableButtonsRow",
+                            children = [
+                                html.Button("Add Selected Trails", id = "add_selection"),
+                                html.Button("Remove Selected Trails", id = "remove_selection")
+                            ]
+                        ),
+                        
+                        # table of selected trails
+                        html.Div(
+                            className = "trailTable",
+                            children = [
+                                dash_table.DataTable(
+                                    id = "selected_trail_table",
+                                    columns = [
+                                        {"name": "Trail", "id": "name"},
+                                        {"name": "Location", "id": "location"},
+                                        {"name": "Miles", "id": "length"},
+                                        {"name": "Climb", "id": "ascent"},
+                                        {"name": "Rating", "id": "stars"}
+                                    ],
+                                    export_format = "csv",
+                                    export_headers = "names",
+                                    page_size = 20,
+                                    row_selectable = "multi",
+                                    sort_action = "native",
+                                    sort_mode = "multi",
+                                    
+                                    # style table
+                                    style_as_list_view = True,
+                                    style_cell = {"textAlign": "left"},
+                                    style_data_conditional = [
+                                        {"if": {"row_index": "odd"}, 
+                                         "backgroundColor" : "rgb(248, 248, 248)"}
+                                    ],
+                                    style_header = {
+                                        "backgroundColor": "rgb(230, 230, 230)",
+                                        "fontWeight": "bold"
+                                    },
+                                    style_table = {"width": "800px", "height": "800px"}
+                                )
+                            ]
                         )
                     ]
                 )
@@ -90,7 +133,7 @@ app.layout = html.Div(
                             id = "length_slider",
                             min = 0,
                             max = 2,
-                            #step = 0.1,
+                            step = 0.05,
                             value = [0, 2],
                             marks = {
                                 0: {"label": "1"},
@@ -103,6 +146,29 @@ app.layout = html.Div(
                                 1.30103: {"label": "20"},
                                 1.69897: {"label": "50"},
                                 2: {"label": "100"}
+                            }
+                        )
+                    ]
+                ),
+                
+                # a slider to select trail rating
+                html.Div(
+                    className = "inputRatingSlider",
+                    children = [
+                        html.Label("Rating"),
+                        dcc.RangeSlider(
+                            id = "rating_slider",
+                            min = 0,
+                            max = 5,
+                            step = 1,
+                            value = [0, 5],
+                            marks = {
+                                0: {"label": "0"},
+                                1: {"label": "1"},
+                                2: {"label": "2"},
+                                3: {"label": "3"},
+                                4: {"label": "4"},
+                                5: {"label": "5"}
                             }
                         )
                     ]
