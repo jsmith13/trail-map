@@ -17,6 +17,7 @@ hikes["difficulty"] = hikes["difficulty"].apply(lambda x: {"green": 0, "greenBlu
 # function trailheads_map_update
 # returns a list of longitude, latitude, name, and highest elevation of trailheads (0, 1, 2, 3)
 # returns longitude and latitude to center mapbox on (4, 5)
+# returns row indices (6)
 def trailheads_map_update(length, difficulty, rating):   
     # subset hikes by length, difficulty, and rating
     hikes_subset = hikes.query("length >= @length[0] & length <= @length[1]")
@@ -29,18 +30,21 @@ def trailheads_map_update(length, difficulty, rating):
         hikes_subset["latitude"],
         hikes_subset["name"],
         hikes_subset["high"],
-
+        
         # longitude of center
         np.mean([hikes_subset["longitude"].min(), hikes_subset["longitude"].max()]),
         # latitude of center
-        np.mean([hikes_subset["latitude"].min(), hikes_subset["latitude"].max()])
+        np.mean([hikes_subset["latitude"].min(), hikes_subset["latitude"].max()]),
+        
+        # row indices for future reference
+        hikes_subset.index
     )
 
 # function add_selected_trails
 # returns a dataframe to be displayed
 def add_selected_trails(selection, previous_indices):
-    # build a list of indices from the selection and previous data
-    selection_indices = [i["pointIndex"] for i in selection["points"]]
+    # build a list of indices from the current selection
+    selection_indices = [i["id"] for i in selection["points"]]
        
     # merge the two lists, removing duplicate indices
     current_indices = set(selection_indices + previous_indices)
@@ -51,3 +55,17 @@ def add_selected_trails(selection, previous_indices):
     # return the subsetted data and a list of current indices
     return(hikes_selection.to_dict("records"), list(current_indices))
 
+
+# function remove_selected_trails
+# returns a dataframe to be displayed
+def remove_selected_trails(selection, previous_indices):
+    # identify the row indices of the trails selected for removal
+    selected_indices = hikes.iloc[previous_indices, ].index[selection]
+    
+    # remove those indices from previous_indices
+    current_indices = set(previous_indices).difference(set(selected_indices))
+    
+    # subset hikes to the selected trailheads
+    hikes_selection = hikes.iloc[list(current_indices), ]
+    
+    return(hikes_selection.to_dict("records"), list(current_indices))

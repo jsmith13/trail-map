@@ -7,14 +7,14 @@ import config
 import data_retrieval_functions as drf
 
 # import required libraries
+import json
 import plotly.graph_objs as plgo
+from dash import callback_context
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
-# initiate a tracker for the number of clicks on each button in the interface
-n_clicks_tracker = {"add": 0, "remove": 0}
-
-# initiate a list of hike_IDs for the data currently in the table of selected trails
-hike_IDs = []
+# initiate a list of row indices for the data currently in the table of selected trails
+hike_indices = []
 
 ## this function is a wrapper to allow the callbacks to be imported into app.py
 def register_callbacks(app):
@@ -39,6 +39,7 @@ def register_callbacks(app):
         data_trailheads_plot = [dict(
             type = "scattermapbox",
             mode = "markers",
+            ids = updates[6],
             lon = updates[0], 
             lat = updates [1], 
             text = updates[2],
@@ -52,7 +53,6 @@ def register_callbacks(app):
 
         # define plot layout
         layout_trailheads_plot = plgo.Layout(
-            #title = "It's a Map",
             autosize = False,
             width = 800,
             height = 800,
@@ -80,27 +80,41 @@ def register_callbacks(app):
     
     ## updates the table of selected trails
     @app.callback(
-        Output("selected_trail_table", "data"),
+        [Output("selected_trail_table", "data"),
+        Output("selected_trail_table", "selected_rows")],
         [Input("add_selection", "n_clicks"),
         Input("remove_selection", "n_clicks")],
-        [State("trailheads_plot", "selectedData")]
+        [State("trailheads_plot", "selectedData"),
+        State("selected_trail_table", "selected_rows")]
     )
     
-    def callback_update_table(add_selection, remove_selection, selection):
-        # identify hike_IDs as a global variable
-        global hike_IDs
+    def callback_update_table(add_selection, remove_selection, trailheads_plot_selection, table_selection):
+        # identify hike_indices as a global variable
+        global hike_indices
         
-        # check to see if selection is empty
-        if selection is not None:
+        # initialize the table with empty data on load
+        if trailheads_plot_selection is None and table_selection is None:             
+            return([{}], [])
+            
+        # determine which button triggered this callback
+        triggering_button = callback_context
+        # pull the name out of the larger callback object
+        triggering_button = triggering_button.triggered[0]["prop_id"].split(".")[0]
+                
+        # add selected trails
+        if triggering_button == "add_selection":          
             # pull data on trails selected in the trailheads plot
             # update the list of indices
-            updates, hike_IDs = drf.add_selected_trails(selection, hike_IDs)
-                        
-            # return the data to be added
-            return(updates)
+            updates, hike_indices = drf.add_selected_trails(trailheads_plot_selection, hike_indices)
+            
+            # return the data to be added and clear selection
+            return(updates, [])
         
-        # if selection is empty, return empty data
-        else:
-            return([{}])
-    
-    
+        # or remove selected trails
+        if triggering_button == "remove_selection":
+            # update the list of indices
+            updates, hike_indices = drf.remove_selected_trails(table_selection, hike_indices)
+            
+            # return the data to be added and clear selection
+            return(updates, [])
+        
